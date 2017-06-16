@@ -11,7 +11,6 @@
  * This should be an array of module namespaces used in the application.
  */
 return [
-    'Zf2Whoops',
     'Zend\Cache',
     'Zend\Paginator',
     'Zend\ServiceManager\Di',
@@ -26,7 +25,5 @@ return [
     'Zend\Validator',
     'DoctrineModule',
     'DoctrineORMModule',
-    'ZendDeveloperTools',
-    'SanSessionToolbar',
     'Application',
 ];
