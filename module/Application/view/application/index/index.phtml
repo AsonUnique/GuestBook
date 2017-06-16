@@ -1,0 +1,147 @@
+<h1 class="text-center">Guest Book</h1>
+
+<div>
+    <?php $this->getNotificationHelper(); ?>
+</div>
+
+<?php
+/** @var \Zend\Paginator\Paginator $paginator */
+$paginator = $this->paginator;
+?>
+<?php if (count($paginator) > 0) : ?>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Avatar</th>
+            <th>Email</th>
+            <th>Message</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php
+        /** @var \Application\Entity\PostEntity $post */
+        foreach ($paginator as $post) :
+            ?>
+            <tr>
+                <td>
+                    <?php
+                    if (!empty($post->getAvatar())) {
+                        $avatar = $this->avatarUploadPath . DIRECTORY_SEPARATOR . $post->getAvatar();
+                    } else {
+                        $avatar = $this->basePath('img/noavatar.png');
+                    }
+                    ?>
+                    <img width="50px"
+                         src="<?php echo $avatar; ?>"
+                         alt="avatar"/>
+                </td>
+                <td><?php echo $post->getEmail(); ?></td>
+                <td><?php echo $post->getMessage(); ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+    <div class="text-center">
+        <?php
+        echo $this->paginationControl($paginator, 'sliding', 'partial/pagination.phtml', ['route' => 'home']);
+        ?>
+    </div>
+    <hr/>
+<?php endif; ?>
+
+<h3 class="text-center">Leave a message</h3>
+
+<?php
+/** @var \Application\Form\PostForm $form $form */
+$form = $this->form;
+$form->setAttribute('action', $this->url('application', ['action' => 'post']));
+$form->prepare();
+?>
+<div class="col-md-4 col-md-offset-4">
+    <?php echo $this->form()->openTag($form); ?>
+    <div class="form-group" id="email">
+        <?php echo $this->formRow($form->get('email')); ?>
+    </div>
+    <div class="form-group">
+        <?php echo $this->formRow($form->get('avatar')); ?>
+    </div>
+    <div class="form-group">
+        <?php echo $this->formRow($form->get('message')); ?>
+    </div>
+    <div class="btn-group">
+        <?php echo $this->formRow($form->get('submit')); ?>
+    </div>
+</div>
+
+<!-- Не выносил скрипты в отдельный файл просто для удобства проверки -->
+<script>
+    $(function () {
+        var form = $('form');
+        form.validate({
+            rules: {
+                email: {
+                    required: true,
+                    email: true,
+                    minlength: 5,
+                    maxlength: 255
+                },
+                message: {
+                    required: true,
+                    minlength: 1,
+                    maxlength: 16383
+                },
+                avatar: {
+                    required: false,
+                    accept: "image/*"
+                }
+            },
+            submitHandler: function (form) {
+                // remove previous error messages
+
+                var $form = $(form),
+                    url = $form.attr('action'),
+                    formData = new FormData(),
+                    params = $form.serializeArray(),
+                    files = $form.find('[name="avatar"]')[0].files;
+
+                $form.find('ul.error').remove();
+
+                $.each(files, function (i, file) {
+                    console.log(file);
+                    formData.append('avatar', file);
+                });
+
+                $.each(params, function (i, val) {
+                    formData.append(val.name, val.value);
+                });
+
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    dataType: "json",
+                    data: formData,
+                    mimeType: "multipart/form-data",
+                    contentType: false,
+                    processData: false
+                }).done(function (data) {
+                    if (data.success) {
+                        $form.trigger('reset');
+                        alert('Your message will be shown after moderation');
+                    } else {
+                        if (data.reason) {
+                            $.each(data.reason, function (name, object) {
+                                var ul = '<ul class="error list-unstyled">';
+                                $.each(object, function (key, value) {
+                                    ul += '<li>' + value + '</li>';
+                                });
+                                ul += '</ul>';
+
+                                $('#' + name + ' label').append(ul);
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    });
+</script>
