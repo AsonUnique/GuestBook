@@ -7,8 +7,11 @@ This is a guest book application written using Zend Framework 3.
 ## Config
 
 Admin credentials are stored in config file, located at ```/config/autoload/admin.global.php```
+
 Pagination settings are stored in config file, located at ```/config/autoload/pagination.global.php```
+
 Database config shoul be specified in config file ```/config/autoload/db.global.php```
+
 Database dump located at ```/data/db.sql```
 
 ## Web server setup
